@@ -1,63 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Shailendra Smart AI</title>
+  <meta charset="UTF-8">
   <style>
-    body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 30px; }
-    h1 { color: #333; }
-    textarea { width: 100%; height: 100px; font-size: 16px; padding: 10px; }
-    button { padding: 10px 20px; font-size: 16px; margin: 10px 5px; cursor: pointer; }
-    #response { margin-top: 30px; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #ccc; white-space: pre-wrap; }
+    body { font-family: Arial; padding: 20px; background: #f7f7f7; }
+    input, button, textarea { font-size: 16px; padding: 10px; margin: 5px 0; width: 100%; }
+    #response { margin-top: 20px; padding: 10px; background: #fff; border: 1px solid #ddd; min-height: 100px; }
+    .mic-btn { width: 48px; height: 48px; border-radius: 24px; background: red; color: #fff; border: none; font-size: 24px; }
   </style>
 </head>
 <body>
-  <h1>🧠 Shailendra Smart AI</h1>
-  <p>Ask me anything — 3D movies, Ramayan, video creation, app building, YouTube search, etc.</p>
 
-  <textarea id="prompt" placeholder="Type your request here..."></textarea><br>
-
+  <h2>🤖 Shailendra Smart AI</h2>
+  <input type="text" id="prompt" placeholder="Type or speak your command..." />
   <button onclick="sendPrompt()">Send</button>
-  <button onclick="startVoice()">🎙 Speak</button>
+  <button class="mic-btn" onclick="startVoice()">🎤</button>
 
-  <div id="response">AI response will appear here...</div>
+  <div id="response">AI reply will appear here...</div>
 
   <script>
-    const API_ENDPOINT = "https://shailendra-ai.replit.app/ask"; // ✅ Update with your backend URL
+    const API_ENDPOINT = "https://shailendra-ai-1.onrender.com/ask";
 
-    async function sendPrompt(text = null) {
-      const prompt = text || document.getElementById("prompt").value;
-      const responseBox = document.getElementById("response");
-      responseBox.innerHTML = "⏳ Thinking...";
+    function sendPrompt() {
+      const prompt = document.getElementById("prompt").value;
+      if (!prompt) return alert("Please enter a message");
 
-      try {
-        const res = await fetch(API_ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt })
-        });
-
-        const data = await res.json();
-        responseBox.innerHTML = "🧠 " + data.reply;
-      } catch (err) {
-        responseBox.innerHTML = "❌ Error: " + err.message;
-      }
+      fetch(API_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("response").innerText = data.reply;
+        speak(data.reply);
+      })
+      .catch(err => {
+        document.getElementById("response").innerText = "❌ Error connecting to AI.";
+        console.error(err);
+      });
     }
 
     function startVoice() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = 'en-IN';
+      recognition.lang = "en-IN";
+      recognition.onresult = function(event) {
+        const text = event.results[0][0].transcript;
+        document.getElementById("prompt").value = text;
+        sendPrompt();
+      };
       recognition.start();
+    }
 
-      recognition.onresult = (event) => {
-        const voiceText = event.results[0][0].transcript;
-        document.getElementById("prompt").value = voiceText;
-        sendPrompt(voiceText);
-      };
-
-      recognition.onerror = (event) => {
-        alert("Voice error: " + event.error);
-      };
+    function speak(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = "en-IN";
+      window.speechSynthesis.speak(msg);
     }
   </script>
 </body>
