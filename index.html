@@ -1,41 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Shailendra AI Assistant</title>
+  <meta charset="UTF-8">
+  <title>Shailendra Smart AI</title>
   <style>
-    body { font-family: Arial; background: #f4f4f4; padding: 40px; }
-    textarea { width: 100%; height: 100px; font-size: 16px; }
-    button { padding: 10px 20px; font-size: 16px; }
-    #response { margin-top: 20px; white-space: pre-wrap; }
+    body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 30px; }
+    h1 { color: #333; }
+    textarea { width: 100%; height: 100px; font-size: 16px; padding: 10px; }
+    button { padding: 10px 20px; font-size: 16px; margin: 10px 5px; cursor: pointer; }
+    #response { margin-top: 30px; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #ccc; white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <h1>🤖 Welcome, Shailendra ji!</h1>
-  <p>Ask anything — Ramayan, YouTube, 3D movie, story, or app building:</p>
-  
-  <textarea id="userInput" placeholder="Type your request here..."></textarea>
-  <br><br>
-  <button onclick="sendToAI()">Send to AI</button>
+  <h1>🧠 Shailendra Smart AI</h1>
+  <p>Ask me anything — 3D movies, Ramayan, video creation, app building, YouTube search, etc.</p>
 
-  <div id="response"></div>
+  <textarea id="prompt" placeholder="Type your request here..."></textarea><br>
+
+  <button onclick="sendPrompt()">Send</button>
+  <button onclick="startVoice()">🎙 Speak</button>
+
+  <div id="response">AI response will appear here...</div>
 
   <script>
-    async function sendToAI() {
-      const input = document.getElementById("userInput").value;
+    const API_ENDPOINT = "https://shailendra-ai.replit.app/ask"; // ✅ Update with your backend URL
+
+    async function sendPrompt(text = null) {
+      const prompt = text || document.getElementById("prompt").value;
       const responseBox = document.getElementById("response");
-      responseBox.innerHTML = "Thinking... 🔄";
+      responseBox.innerHTML = "⏳ Thinking...";
 
       try {
-        const res = await fetch("https://shailendra-ai-backend.onrender.com/ask", {
+        const res = await fetch(API_ENDPOINT, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: input })
+          body: JSON.stringify({ prompt })
         });
+
         const data = await res.json();
-        responseBox.innerHTML = "🧠 AI Response:\n\n" + data.reply;
+        responseBox.innerHTML = "🧠 " + data.reply;
       } catch (err) {
-        responseBox.innerHTML = "❌ Error reaching AI backend. Please try again.";
+        responseBox.innerHTML = "❌ Error: " + err.message;
       }
+    }
+
+    function startVoice() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-IN';
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        const voiceText = event.results[0][0].transcript;
+        document.getElementById("prompt").value = voiceText;
+        sendPrompt(voiceText);
+      };
+
+      recognition.onerror = (event) => {
+        alert("Voice error: " + event.error);
+      };
     }
   </script>
 </body>
