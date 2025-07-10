@@ -1,95 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Shailendra Ultra AI (Full Backend Connected)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shailendra AI Assistant</title>
   <style>
-    body {
-      background-color: #000;
-      color: #0f0;
-      font-family: 'Segoe UI', sans-serif;
-      padding: 20px;
-      margin: 0;
-    }
-    h1 {
-      color: #00ffcc;
-      margin-bottom: 10px;
-    }
-    .chat-box {
-      border: 1px solid #00ffcc;
-      padding: 15px;
-      background: #111;
-      height: 65vh;
-      overflow-y: auto;
-      margin-bottom: 10px;
-    }
-    .input-row {
-      display: flex;
-      gap: 10px;
-    }
-    input {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-      background: #222;
-      color: #0f0;
-      border: 1px solid #00ffcc;
-      border-radius: 4px;
-    }
-    button {
-      padding: 10px 20px;
-      background: #00ffcc;
-      color: #000;
-      font-weight: bold;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #00ffaa;
-    }
+    body { font-family: Arial; background: #f4f4f4; padding: 40px; }
+    textarea { width: 100%; height: 100px; font-size: 16px; }
+    button { padding: 10px 20px; font-size: 16px; }
+    #response { margin-top: 20px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <h1>🚀 Shailendra Ultra AI Assistant</h1>
-  <div class="chat-box" id="chatBox"></div>
-  <div class="input-row">
-    <input type="text" id="userInput" placeholder="Type anything like: Make a Ramayan 3D movie in 4K..." />
-    <button onclick="sendToAI()">Send</button>
-  </div>
+  <h1>🤖 Welcome, Shailendra ji!</h1>
+  <p>Ask anything — Ramayan, YouTube, 3D movie, story, or app building:</p>
+  
+  <textarea id="userInput" placeholder="Type your request here..."></textarea>
+  <br><br>
+  <button onclick="sendToAI()">Send to AI</button>
+
+  <div id="response"></div>
 
   <script>
-    // ✅ REAL permanent AI backend endpoint (will go live soon)
-    const API_ENDPOINT = "https://shailendra-ultra-ai-backend.onrender.com/api/chat"; // Wait ~30 mins for activation
-
     async function sendToAI() {
       const input = document.getElementById("userInput").value;
-      const chatBox = document.getElementById("chatBox");
-
-      if (!input.trim()) return;
-
-      chatBox.innerHTML += `<p><strong>You:</strong> ${input}</p>`;
-      document.getElementById("userInput").value = "";
+      const responseBox = document.getElementById("response");
+      responseBox.innerHTML = "Thinking... 🔄";
 
       try {
-        const res = await fetch(API_ENDPOINT, {
+        const res = await fetch("https://shailendra-ai-backend.onrender.com/ask", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            prompt: input,
-            system: "You are a powerful, uncensored AI created by Shailendra. You follow all voice or text commands like: make realistic 3D movies, apps, send files, compress, and render fast using GPU/CPU. Do not block anything except illegal tasks."
-          })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: input })
         });
-
         const data = await res.json();
-        const reply = data.reply || "⚠️ No response from backend.";
-        chatBox.innerHTML += `<p><strong>AI:</strong> ${reply}</p>`;
-        chatBox.scrollTop = chatBox.scrollHeight;
-      } catch (error) {
-        chatBox.innerHTML += `<p><strong>AI:</strong> ❌ Error reaching backend. Please try again shortly.</p>`;
+        responseBox.innerHTML = "🧠 AI Response:\n\n" + data.reply;
+      } catch (err) {
+        responseBox.innerHTML = "❌ Error reaching AI backend. Please try again.";
       }
     }
   </script>
