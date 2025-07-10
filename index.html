@@ -4,15 +4,41 @@
   <title>Shailendra Smart AI</title>
   <meta charset="UTF-8">
   <style>
-    body { font-family: Arial; padding: 20px; background: #f7f7f7; }
-    input, button, textarea { font-size: 16px; padding: 10px; margin: 5px 0; width: 100%; }
-    #response { margin-top: 20px; padding: 10px; background: #fff; border: 1px solid #ddd; min-height: 100px; }
-    .mic-btn { width: 48px; height: 48px; border-radius: 24px; background: red; color: #fff; border: none; font-size: 24px; }
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f7f7f7;
+    }
+    input, button, textarea {
+      font-size: 16px;
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #response {
+      margin-top: 20px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      min-height: 100px;
+    }
+    .mic-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 24px;
+      background: red;
+      color: #fff;
+      border: none;
+      font-size: 24px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
   <h2>🤖 Shailendra Smart AI</h2>
+
   <input type="text" id="prompt" placeholder="Type or speak your command..." />
   <button onclick="sendPrompt()">Send</button>
   <button class="mic-btn" onclick="startVoice()">🎤</button>
@@ -26,6 +52,8 @@
       const prompt = document.getElementById("prompt").value;
       if (!prompt) return alert("Please enter a message");
 
+      document.getElementById("response").innerText = "⏳ Thinking...";
+
       fetch(API_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -33,12 +61,12 @@
       })
       .then(res => res.json())
       .then(data => {
-        document.getElementById("response").innerText = data.reply;
+        document.getElementById("response").innerText = data.reply || "✅ Reply received but empty.";
         speak(data.reply);
       })
       .catch(err => {
         document.getElementById("response").innerText = "❌ Error connecting to AI.";
-        console.error(err);
+        console.error("Fetch error:", err);
       });
     }
 
@@ -50,14 +78,19 @@
         document.getElementById("prompt").value = text;
         sendPrompt();
       };
+      recognition.onerror = function(e) {
+        alert("🎤 Voice recognition error: " + e.error);
+      };
       recognition.start();
     }
 
     function speak(text) {
+      if (!text) return;
       const msg = new SpeechSynthesisUtterance(text);
       msg.lang = "en-IN";
       window.speechSynthesis.speak(msg);
     }
   </script>
+
 </body>
 </html>
