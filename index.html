@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shailendra Smart AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+      margin: 0;
+    }
+    h2 {
+      color: #333;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .mic-btn {
+      width: 50px;
+      height: 50px;
+      background-color: red;
+      color: white;
+      font-size: 24px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    #response {
+      background: #fff;
+      padding: 15px;
+      margin-top: 15px;
+      border: 1px solid #ccc;
+      min-height: 100px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🤖 Shailendra Smart AI (v2)</h2>
+
+  <input type="text" id="prompt" placeholder="Type or speak your question..." />
+  <button onclick="sendPrompt()">Send</button>
+  <button class="mic-btn" onclick="startVoice()">🎤</button>
+
+  <div id="response">AI reply will appear here...</div>
+
+  <script>
+    const API_ENDPOINT = "https://shailendra-ai-1.onrender.com/ask";
+
+    async function sendPrompt() {
+      const prompt = document.getElementById("prompt").value.trim();
+      if (!prompt) return alert("❗Please enter a question first.");
+
+      document.getElementById("response").innerText = "⏳ Thinking...";
+
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ prompt })
+        });
+
+        if (!res.ok) throw new Error("API Error");
+
+        const data = await res.json();
+        document.getElementById("response").innerText = data.reply || "✅ Reply received but empty.";
+        speak(data.reply);
+      } catch (err) {
+        console.error("AI error:", err);
+        document.getElementById("response").innerText = "❌ Error connecting to AI.";
+      }
+    }
+
+    function startVoice() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-IN";
+      recognition.onresult = function(event) {
+        const text = event.results[0][0].transcript;
+        document.getElementById("prompt").value = text;
+        sendPrompt();
+      };
+      recognition.onerror = function(e) {
+        alert("🎤 Voice error: " + e.error);
+      };
+      recognition.start();
+    }
+
+    function speak(text) {
+      if (!text) return;
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = "en-IN";
+      window.speechSynthesis.speak(msg);
+    }
+  </script>
+
+</body>
+</html>
