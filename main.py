@@ -1,13 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import openai
+from openai import OpenAI
 import os
 
 app = Flask(__name__)
 CORS(app)
 
-# ✅ STEP 1: API Key (automatically loaded from Render ENV)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# ✅ Load API key from environment
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.route('/')
 def home():
@@ -16,13 +16,12 @@ def home():
 @app.route('/ask', methods=['POST'])
 def ask():
     data = request.get_json()
-    prompt = data.get("prompt", "")
+    prompt = data.get("prompt", "").strip()
 
     if not prompt:
         return jsonify({"reply": "❗Please enter a message."})
 
     try:
-        client = openai.OpenAI()
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
